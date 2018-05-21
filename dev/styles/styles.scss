@@ -1,0 +1,71 @@
+@import "setup";
+
+body {
+    background: mediumslateblue;
+}
+
+ul, li, h1, h2, h3, div, input, button, form {
+    margin: 0;
+    padding: 0;
+}
+
+.wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    // align-items: center;
+    height: 100vh;
+    padding: 5vh 0;
+}
+
+form {
+    height: 5%;
+    display: flex;
+    width: 100%;
+}
+
+input, button {
+    border: none;
+    height: 100%;
+}
+
+input {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+button {
+    min-width: 100px;
+
+    &:hover {
+        opacity: 0.8;
+    }
+
+    &:active {
+        opacity: 0.5;
+    }
+}
+
+.chatArea, .otherArea {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.messageWindow {
+    height: 80vh;
+    width: 100%;
+    background: #fff;
+}
+
+.loggedIn {
+    border: 3px solid greenyellow;
+    text-align: center;
+}
+
+.loggedInButton {
+    display: none;
+}
