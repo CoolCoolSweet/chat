@@ -4,7 +4,7 @@ body {
     background: mediumslateblue;
 }
 
-ul, li, h1, h2, h3, div, input, button, form {
+ul, li, h1, h2, h3, div, input, button, form, p{
     margin: 0;
     padding: 0;
 }
@@ -103,4 +103,11 @@ button {
 .selectedRoom {
     color: #fff;
     background: #000;
+}
+
+.injectJoin {
+    width: 75%;
+    color: grey;
+    margin: 2vh 10px;
+    word-wrap: break-word;
 }

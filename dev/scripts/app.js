@@ -25,6 +25,8 @@ class App extends React.Component {
       createRoom: "",
       roomList: [],
       chatMessages: [],
+      userList: [],
+      joinInject: 0,
     }
 
     this.handleInput = this.handleInput.bind(this);
@@ -84,6 +86,8 @@ class App extends React.Component {
     e.preventDefault();
     if (!(this.state.createRoom)) {
       alert('Cannot create a room with no name!');
+    } else if (this.state.roomList.includes(this.state.createRoom)) {
+      alert('A room with that name already exists!');
     } else {
       // Push the room to the FirebaseDB
       firebase.database().ref(`rooms/${this.state.createRoom}`).set({
@@ -97,23 +101,55 @@ class App extends React.Component {
   }
 
   joinRoom (e) {
+    // Remove the user from any existing room
+    firebase.database().ref(`rooms/${this.state.userRoom}/userList/${this.state.userID}`).remove();
     // setState to the room chosen to join
     this.setState({
       userRoom: e.target.getAttribute('name')
     }, () => {
-      // pull chat for room from Firebase DB and setState of chatMessages
-      firebase.database().ref(`rooms/${this.state.userRoom}/messages`).on("value", (snapshot) => {
-        let tempArray = [];
-        for (let messageKey in snapshot.val()) {
-          tempArray.push(snapshot.val()[messageKey]);
-        };
+      // find out where in the messages array the user joins the room and setState that value
+      firebase.database().ref(`rooms/${this.state.userRoom}/messages`).once("value").then((snapshot) => {
+        let tempVal = snapshot.val() === null ? 0 : Object.keys(snapshot.val()).length;
         this.setState({
-          chatMessages: tempArray
-        }, () => {
-          let scrollBot = document.getElementsByClassName("messageWindow")[0];
-          scrollBot.scrollTop = scrollBot.scrollHeight - scrollBot.clientHeight;
-        });  
-      })
+          joinInject: tempVal
+        });
+      
+      // pull chat for room from Firebase DB and setState of chatMessages
+        firebase.database().ref(`rooms/${this.state.userRoom}/messages`).on("value", (snapshot) => {
+          let tempArray = [];
+          for (let messageKey in snapshot.val()) {
+            tempArray.push(snapshot.val()[messageKey]);
+          };
+          // inject user join message at correct spot in the array before setting state
+          tempArray.splice(this.state.joinInject,0,{ userMessage: `You have joined the "${this.state.userRoom}" room.`, userID: "injectJoin" });
+          this.setState({
+            chatMessages: tempArray
+          }, () => {
+            let scrollBot = document.getElementsByClassName("messageWindow")[0];
+            scrollBot.scrollTop = scrollBot.scrollHeight - scrollBot.clientHeight;
+          });  
+        });
+      });
+
+      // add the user to the list of users in the room
+      firebase.database().ref(`rooms/${this.state.userRoom}/userList/${this.state.userID}`).set({
+        userName: this.state.userName,
+        userID: this.state.userID
+      });
+
+      // remove the user from the list of users on disconnect
+      firebase.database().ref(`rooms/${this.state.userRoom}/userList/${this.state.userID}`).onDisconnect().remove();
+
+
+      firebase.database().ref(`rooms/${this.state.userRoom}/userList`).on("value", (snapshot) => {
+        let tempArray = [];
+        for (let userID in snapshot.val()) {
+          tempArray.push(snapshot.val()[userID].userName);
+        }
+        this.setState({
+          userList: tempArray
+        });
+      });
     });
   }
 
@@ -130,13 +166,15 @@ class App extends React.Component {
       });
     }
   }
+
   render() {
     return (
       <div className="wrapper">
         <div className="chatArea">
           <ul className="messageWindow">
             {this.state.chatMessages.map((message, i) => {
-              return <li className={message.userID === this.state.userID ? "chatMessage ownMessage" : "chatMessage"} key={message.userID + i}><p>{message.userMessage}</p></li>
+              // Conditional Rendering to see if the message was 1) sent by the user 2) sent from the joinInject
+              return <li className={message.userID === this.state.userID ? "chatMessage ownMessage" : message.userID === "injectJoin" ? "injectJoin" : "chatMessage"} key={message.userID + i}><p>{message.userMessage}</p></li>
             })}
           </ul>
           <form action="" onSubmit={this.sendMessage}>
@@ -150,6 +188,9 @@ class App extends React.Component {
             <button className={this.state.userID == "" ? "loginButton" : "loginButton loggedInButton"} type="submit">Login</button>
           </form>
           <ul className="userList">
+            {this.state.userList.map((user, i) => {
+              return <li name={user} key={user + i}><p>{user}</p></li>
+            })}
           </ul>
           <form action="" onSubmit={this.createRoom}>
             <input type="text" name="createRoom" value={this.state.createRoom} onChange={this.handleInput} className="roomInput" placeholder="Create a room ..."/>
