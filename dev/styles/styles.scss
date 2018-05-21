@@ -13,14 +13,14 @@ ul, li, h1, h2, h3, div, input, button, form {
     max-width: 1000px;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     // align-items: center;
     height: 100vh;
     padding: 5vh 0;
 }
 
 form {
-    height: 5%;
+    height: 5vh;
     display: flex;
     width: 100%;
 }
@@ -33,6 +33,7 @@ input, button {
 input {
     min-width: 0;
     flex-grow: 1;
+    padding-left: 10px;
 }
 
 button {
@@ -48,7 +49,7 @@ button {
 }
 
 .chatArea, .otherArea {
-    width: 50%;
+    width: calc((100% - 5vh)/2);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -59,6 +60,8 @@ button {
     height: 80vh;
     width: 100%;
     background: #fff;
+    overflow-y: scroll;
+    list-style: none;
 }
 
 .loggedIn {
@@ -68,4 +71,36 @@ button {
 
 .loggedInButton {
     display: none;
+}
+
+.roomList, .userList {
+    height: calc(65vh/2);
+    width: 100%;
+    background: #fff;
+    list-style: none;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.chatMessage {
+    width: 75%;
+    padding: 1vh 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background: lightgoldenrodyellow;
+    margin: 2vh 10px;
+    word-wrap: break-word;
+
+    &:nth-of-type(even) {
+        background: lightcyan;
+    }
+}
+
+.ownMessage {
+    border: 1px solid red;
+}
+
+.selectedRoom {
+    color: #fff;
+    background: #000;
 }
