@@ -142,6 +142,22 @@ button {
     text-decoration: underline;
 }
 
+.dmMessageInc {
+    border-color: red;
+    
+    .chatMessageName {
+        color: red
+    }
+}
+
+.dmMessage {
+    border-color: royalblue;
+    
+    .chatMessageName {
+        color: royalblue
+    }
+}
+
 @media (max-width: 700px) { 
     .wrapper {
         padding: calc(10vh/3) 20px;

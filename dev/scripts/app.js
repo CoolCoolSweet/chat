@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
+import RoomList from './RoomList.js';
+import UserList from './UserList.js';
 
 // Initialize Firebase
 const config = {
@@ -27,8 +29,8 @@ class App extends React.Component {
       chatMessages: [],
       userList: [],
       joinInject: 0,
-      globalUserList: [],
       disableLogin: false,
+      dmID: ""
     }
 
     this.handleInput = this.handleInput.bind(this);
@@ -36,6 +38,7 @@ class App extends React.Component {
     this.createRoom = this.createRoom.bind(this);
     this.joinRoom = this.joinRoom.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
+    this.directMessage = this.directMessage.bind(this);
   }
   componentDidMount() {
     console.log("It's Alive!")
@@ -62,9 +65,6 @@ class App extends React.Component {
         for (let key in snapshot.val()) {
           tempArray.push(snapshot.val()[key].userName);
         }
-      
-      console.log(tempArray);
-      console.log(this.state.userName);
       if (!(this.state.userName)) {
         alert('Please enter a name!');
         this.setState({
@@ -131,7 +131,7 @@ class App extends React.Component {
       });
     }
   }
-  
+
   joinRoom (e) {
     // Remove the user from any existing room
     firebase.database().ref(`rooms/${this.state.userRoom}/userList`).off();
@@ -155,7 +155,7 @@ class App extends React.Component {
             tempArray.push(snapshot.val()[messageKey]);
           };
           // inject user join message at correct spot in the array before setting state
-          tempArray.splice(this.state.joinInject, 0, { userMessage: this.state.userRoom , userID: "injectJoin", userName: `You have now joined the room:`});
+          tempArray.splice(this.state.joinInject, 0, { userMessage: this.state.userRoom , userID: "injectJoin", userName: `You have now joined the room:`, dmID: ""});
           this.setState({
             chatMessages: tempArray
           }, () => {
@@ -198,7 +198,8 @@ class App extends React.Component {
             chatMessages: [{
               userName: 'Disconnected.',
               userID: 'injectJoin',
-              userMessage: 'Please join another room.'
+              userMessage: 'Please join another room.',
+              dmID: ""
             }],
           });
         }
@@ -216,7 +217,8 @@ class App extends React.Component {
       firebase.database().ref(`rooms/${this.state.userRoom}/messages`).push({
         userName: this.state.userName,
         userID: this.state.userID,
-        userMessage: this.state.userMessage
+        userMessage: this.state.userMessage,
+        dmID: ""
       });
 
       this.setState({
@@ -225,21 +227,41 @@ class App extends React.Component {
     }
   }
 
+  directMessage (e) {
+    let dmTarget = e.target.getAttribute('name');
+    let dmMessage = prompt(`What would you like to say to ${dmTarget}?`)
+    if (dmMessage) {
+    firebase.database().ref(`rooms/${this.state.userRoom}/userList/`).once("value").then((snapshot) => {
+      for (let key in snapshot.val()) {
+        if (dmTarget === snapshot.val()[key].userName) {
+          firebase.database().ref(`rooms/${this.state.userRoom}/messages`).push({
+            userName: `${this.state.userName} whispered to ${snapshot.val()[key].userName}`,
+            userID: this.state.userID,
+            userMessage: dmMessage,
+            dmID: snapshot.val()[key].userID
+          });
+        }
+      }
+    });
+  }
+  }
   render() {
     return (
       <div className="wrapper">
         <div className="chatArea">
           <ul className="messageWindow">
             {this.state.chatMessages.map((message, i) => {
-              // Conditional Rendering to see if the message was 1) sent by the user 2) sent from the joinInject
+              // Conditional Rendering to see if the message was 1) sent by the user 2) sent from the joinInject 3) a dm
+              if (message.dmID === this.state.userID || message.dmID === "" || message.userID === this.state.userID) {
               return (
-                <li className={message.userID === "injectJoin" ? "injectJoin chatMessageContainer" : message.userID === this.state.userID ? "chatMessageContainer ownMessage" : "chatMessageContainer"} key={message.userID + i}>
+                <li className={message.userID === "injectJoin" ? "injectJoin chatMessageContainer" : message.dmID === this.state.userID ? "chatMessageContainer dmMessageInc" : (message.dmID) ? "chatMessageContainer dmMessage" : message.userID === this.state.userID ? "chatMessageContainer ownMessage" : "chatMessageContainer"} key={message.userID + i}>
                   <p className="chatMessageName" /* {message.userID === this.state.userID ? "chatMessageName ownMessage" : "chatMessageName"} */>{message.userName}</p>
                 <div className="chatMessage" >
                   <p>{message.userMessage}</p>
                 </div>
               </li>
               )
+            }
             })}
           </ul>
           <form action="" onSubmit={this.sendMessage}>
@@ -253,9 +275,9 @@ class App extends React.Component {
             <button className={this.state.userID == "" ? "loginButton" : "loginButton loggedInButton"} disabled={this.state.disableLogin} type="submit">Login</button>
           </form>
           <ul className="userList">
-            <li className="listTitle">User List</li>
+            <UserList />
             {this.state.userList.map((user, i) => {
-              return <li name={user} key={user + i}><p>{user}</p></li>
+              return <li name={user} key={user + i}><p name={user} onClick={this.directMessage}>{user}</p></li>
             })}
           </ul>
           <form action="" onSubmit={this.createRoom}>
@@ -263,7 +285,7 @@ class App extends React.Component {
             <button className="roomButton" type="submit">Create</button>
           </form>
           <ul className="roomList">
-            <li className="listTitle">Room List</li>
+            <RoomList />
             {this.state.roomList.map((room, i) => {
               return <li name={room} className={this.state.userRoom === room ? "selectedRoom" : ""} onClick={this.joinRoom} key={room + i}>{room}</li>
             })}
