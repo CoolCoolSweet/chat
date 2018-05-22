@@ -17,13 +17,11 @@ ul, li, h1, h2, h3, div, input, button, form, p{
     justify-content: space-between;
     // align-items: center;
     min-height: 100vh;
-    height: 400px;
+    height: 500px;
     padding: 5vh 20px;
 }
 
 form {
-    height: 5vh;
-    min-height: 5%;
     display: flex;
     width: 100%;
 }
@@ -34,19 +32,18 @@ input, button {
 }
 
 input {
+    min-height: 40px;
     min-width: 0;
     flex-grow: 1;
     padding-left: 10px;
     margin-right: 10%;
     border-bottom: 1px solid #000;
-    
-    &:focus {
-        border-bottom: 2px solid #000;
-    }
 }
 
 button {
     min-width: 100px;
+    min-height: 40px;
+    margin-bottom: 20px;
 
     &:hover {
         border: 1px solid black;
@@ -68,8 +65,8 @@ button {
 }
 
 .messageWindow {
-    height: 80vh;
-    min-height: 80%;
+    height: 85%;
+    // min-height: 80%;
     width: 100%;
     background: #fff;
     overflow-y: scroll;
@@ -177,6 +174,7 @@ button {
 @media (max-width: 700px) { 
     .wrapper {
         padding: calc(10vh/3) 20px;
+        height: 800px;
     }
 
     .chatArea {
@@ -197,21 +195,26 @@ button {
         margin: 0;
         width: 100%;
     }
+    
 }
 
 @media (max-width: 460px) { 
     .wrapper {
         flex-direction: column;
         padding: 20px;
+        height: 1300px;
     }
 
     .chatArea, .otherArea {
         width: 100%;
     }
+
+    .otherArea {
+        min-height: 800px;
+    }
     
     .messageWindow {
-        height: calc(100vh - 180px);
-        min-height: 200px;
+        min-height: 300px;
         margin-bottom: 20px;
     }
 
