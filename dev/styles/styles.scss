@@ -1,7 +1,8 @@
 @import "setup";
 
 body {
-    // background: lightcyan;
+    min-width: 280px; /* Smallest width I want to target */
+
 }
 
 ul, li, h1, h2, h3, div, input, button, form, p{
@@ -10,17 +11,19 @@ ul, li, h1, h2, h3, div, input, button, form, p{
 }
 
 .wrapper {
-    max-width: 1000px;
+    max-width: 1040px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     // align-items: center;
-    height: 100vh;
-    padding: 5vh 0;
+    min-height: 100vh;
+    height: 400px;
+    padding: 5vh 20px;
 }
 
 form {
     height: 5vh;
+    min-height: 5%;
     display: flex;
     width: 100%;
 }
@@ -60,6 +63,7 @@ button {
 
 .messageWindow {
     height: 80vh;
+    min-height: 80%;
     width: 100%;
     background: #fff;
     overflow-y: scroll;
@@ -79,6 +83,7 @@ button {
 
 .roomList, .userList {
     height: calc(65vh/2);
+    min-height: calc(65%/2);
     width: 100%;
     background: #fff;
     list-style: none;
@@ -130,4 +135,67 @@ button {
 .userList li, .roomList li {
     width: 100%;
     padding: 1vh 10px;
+}
+
+.listTitle {
+    background: whitesmoke;
+    text-decoration: underline;
+}
+
+@media (max-width: 700px) { 
+    .wrapper {
+        padding: calc(10vh/3) 20px;
+    }
+
+    .chatArea {
+        width: calc((100% - (10vh/3)) * 0.6);
+    }
+
+    .otherArea {
+        width: calc((100% - (10vh/3)) * 0.4);
+    }
+    
+    form {
+        flex-direction: column;
+        height: 10vh;
+        min-height: 10%;
+    }
+
+    input {
+        margin: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 460px) { 
+    .wrapper {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .chatArea, .otherArea {
+        width: 100%;
+    }
+    
+    .messageWindow {
+        height: calc(100vh - 180px);
+        min-height: 200px;
+        margin-bottom: 20px;
+    }
+
+    form {
+        height: 120px;
+    }
+    input, button {
+        height: 50px;
+    }
+    
+    form, input {
+        margin-bottom: 20px;
+    }
+
+    .userList {
+        margin-bottom: 20px;
+    }
+
 }

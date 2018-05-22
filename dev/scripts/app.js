@@ -127,11 +127,11 @@ class App extends React.Component {
       firebase.database().ref(`rooms/${this.state.createRoom}`).onDisconnect().remove()
 
       this.setState({
-        createRoom: ""
+        createRoom: "",
       });
     }
   }
-
+  
   joinRoom (e) {
     // Remove the user from any existing room
     firebase.database().ref(`rooms/${this.state.userRoom}/userList`).off();
@@ -253,6 +253,7 @@ class App extends React.Component {
             <button className={this.state.userID == "" ? "loginButton" : "loginButton loggedInButton"} disabled={this.state.disableLogin} type="submit">Login</button>
           </form>
           <ul className="userList">
+            <li className="listTitle">User List</li>
             {this.state.userList.map((user, i) => {
               return <li name={user} key={user + i}><p>{user}</p></li>
             })}
@@ -262,6 +263,7 @@ class App extends React.Component {
             <button className="roomButton" type="submit">Create</button>
           </form>
           <ul className="roomList">
+            <li className="listTitle">Room List</li>
             {this.state.roomList.map((room, i) => {
               return <li name={room} className={this.state.userRoom === room ? "selectedRoom" : ""} onClick={this.joinRoom} key={room + i}>{room}</li>
             })}
