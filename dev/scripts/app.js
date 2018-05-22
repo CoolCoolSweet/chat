@@ -135,6 +135,7 @@ class App extends React.Component {
   joinRoom (e) {
     // Remove the user from any existing room
     firebase.database().ref(`rooms/${this.state.userRoom}/userList`).off();
+    firebase.database().ref(`rooms/${this.state.userRoom}/messages`).off();
     firebase.database().ref(`rooms/${this.state.userRoom}/userList/${this.state.userID}`).remove();
     // setState to the room chosen to join
     this.setState({
@@ -190,9 +191,15 @@ class App extends React.Component {
         for (let room in snapshot.val()) {
           tempArray.push(room); 
         }
+
         if (!(tempArray.includes(this.state.userRoom))) {
           this.setState({
-            userRoom: ""
+            userRoom: "",
+            chatMessages: [{
+              userName: 'Disconnected.',
+              userID: 'injectJoin',
+              userMessage: 'Please join another room.'
+            }],
           });
         }
       });
