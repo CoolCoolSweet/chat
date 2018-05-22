@@ -1,7 +1,7 @@
 @import "setup";
 
 body {
-    background: mediumslateblue;
+    // background: lightcyan;
 }
 
 ul, li, h1, h2, h3, div, input, button, form, p{
@@ -34,6 +34,8 @@ input {
     min-width: 0;
     flex-grow: 1;
     padding-left: 10px;
+    margin-right: 10%;
+    border-bottom: 1px solid #000;
 }
 
 button {
@@ -62,11 +64,13 @@ button {
     background: #fff;
     overflow-y: scroll;
     list-style: none;
+    border: 1px solid #000;
 }
 
 .loggedIn {
-    border: 3px solid greenyellow;
+    border: 3px solid #000;
     text-align: center;
+    margin: 0;
 }
 
 .loggedInButton {
@@ -80,24 +84,29 @@ button {
     list-style: none;
     overflow-y: scroll;
     overflow-x: hidden;
+    border: 1px solid #000;
+}
+
+.chatMessageContainer {
+    width: 90%;
+    margin: 1vh auto;
+    word-wrap: break-word;
+    border-left: 3px solid lightgray;
+}
+
+.chatMessageName {
+        padding-left: 10px;
+        font-weight: bold;
 }
 
 .chatMessage {
-    width: 75%;
+    width: 100%;
     padding: 1vh 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-    background: lightgoldenrodyellow;
-    margin: 2vh 10px;
-    word-wrap: break-word;
-
-    &:nth-of-type(even) {
-        background: lightcyan;
-    }
 }
 
 .ownMessage {
-    border: 1px solid red;
+    // text-decoration: underline;
+    border-color: grey;
 }
 
 .selectedRoom {
@@ -106,8 +115,19 @@ button {
 }
 
 .injectJoin {
-    width: 75%;
     color: grey;
-    margin: 2vh 10px;
-    word-wrap: break-word;
+    padding: 0 0 0 10px;
+    border: none;
+    
+
+    & .chatMessageName, .chatMessage {
+        background: none; 
+        border: none;
+        padding: 0;
+    }
+}
+
+.userList li, .roomList li {
+    width: 100%;
+    padding: 1vh 10px;
 }

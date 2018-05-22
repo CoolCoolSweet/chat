@@ -27,6 +27,8 @@ class App extends React.Component {
       chatMessages: [],
       userList: [],
       joinInject: 0,
+      globalUserList: [],
+      disableLogin: false,
     }
 
     this.handleInput = this.handleInput.bind(this);
@@ -50,36 +52,62 @@ class App extends React.Component {
 
   handleLogin (e) {
     e.preventDefault();
-    if (!(this.state.userName)) {
-      alert('Please enter a name!');
-    } else {
-      // Push a unique ID to the state.userID when they choose a name
-      firebase.auth().signInAnonymously().then((snapshot) => {
-      this.setState({
-        userID: snapshot.user.uid
+    // block those pesky enter button spammers and protect the SANCTITY OF THE DATABASE
+    this.setState({
+      disableLogin: true
+    });
+    // Check if the name is already in use
+    let tempArray = [];
+    firebase.database().ref(`onlineUsers/`).once("value").then((snapshot) => {
+        for (let key in snapshot.val()) {
+          tempArray.push(snapshot.val()[key].userName);
+        }
+      
+      console.log(tempArray);
+      console.log(this.state.userName);
+      if (!(this.state.userName)) {
+        alert('Please enter a name!');
+        this.setState({
+          disableLogin: false
         });
-
-        // Push the user data to the onlineUsers part of the Firebase DB
-        firebase.database().ref(`onlineUsers/${this.state.userID}`).set({
-          userName: this.state.userName,
-          userID: this.state.userID
-        })
-
-        // Set the onDisconnect to remove the user when they leave
-        firebase.database().ref(`onlineUsers/${this.state.userID}`).onDisconnect().remove()
-
-        // Load roomList from server and convert to and array to setState
-        firebase.database().ref(`rooms`).on("value", (snapshot) => {
-          let tempArray = [];
-          for (let room in snapshot.val()) {
-            tempArray.push(room);
-          };
+      } else if (tempArray.includes(this.state.userName)) {
+        alert('That name is already in use!');
+        this.setState({
+          disableLogin: false
+        });
+      } else {
+        // Push a unique ID to the state.userID when they choose a name
+        firebase.auth().signInAnonymously().then((snapshot) => {
           this.setState({
-            roomList: tempArray
+            userID: snapshot.user.uid
           });
-        })
-      });
-    }
+
+          // Push the user data to the onlineUsers part of the Firebase DB
+          firebase.database().ref(`onlineUsers/${this.state.userID}`).set({
+            userName: this.state.userName,
+            userID: this.state.userID
+          }, (error) => {
+            if (error) {
+              alert('Try another name!');
+            }
+          })
+
+          // Set the onDisconnect to remove the user when they leave
+          firebase.database().ref(`onlineUsers/${this.state.userID}`).onDisconnect().remove()
+
+          // Load roomList from server and convert to and array to setState
+          firebase.database().ref(`rooms`).on("value", (snapshot) => {
+            let tempArray = [];
+            for (let room in snapshot.val()) {
+              tempArray.push(room);
+            };
+            this.setState({
+              roomList: tempArray
+            });
+          })
+        });
+      }
+    });
   }
 
   createRoom (e) {
@@ -97,11 +125,16 @@ class App extends React.Component {
       });
       // Remove rooms created by the user on disconnect
       firebase.database().ref(`rooms/${this.state.createRoom}`).onDisconnect().remove()
+
+      this.setState({
+        createRoom: ""
+      });
     }
   }
 
   joinRoom (e) {
     // Remove the user from any existing room
+    firebase.database().ref(`rooms/${this.state.userRoom}/userList`).off();
     firebase.database().ref(`rooms/${this.state.userRoom}/userList/${this.state.userID}`).remove();
     // setState to the room chosen to join
     this.setState({
@@ -121,7 +154,7 @@ class App extends React.Component {
             tempArray.push(snapshot.val()[messageKey]);
           };
           // inject user join message at correct spot in the array before setting state
-          tempArray.splice(this.state.joinInject,0,{ userMessage: `You have joined the "${this.state.userRoom}" room.`, userID: "injectJoin" });
+          tempArray.splice(this.state.joinInject, 0, { userMessage: this.state.userRoom , userID: "injectJoin", userName: `You have now joined the room:`});
           this.setState({
             chatMessages: tempArray
           }, () => {
@@ -140,7 +173,7 @@ class App extends React.Component {
       // remove the user from the list of users on disconnect
       firebase.database().ref(`rooms/${this.state.userRoom}/userList/${this.state.userID}`).onDisconnect().remove();
 
-
+      // setup a listener to update the room user list
       firebase.database().ref(`rooms/${this.state.userRoom}/userList`).on("value", (snapshot) => {
         let tempArray = [];
         for (let userID in snapshot.val()) {
@@ -150,6 +183,20 @@ class App extends React.Component {
           userList: tempArray
         });
       });
+
+      // setup a listener to clear userRoom state if room disappears
+      firebase.database().ref(`rooms/`).on("value", (snapshot) => {
+        let tempArray = [];
+        for (let room in snapshot.val()) {
+          tempArray.push(room); 
+        }
+        if (!(tempArray.includes(this.state.userRoom))) {
+          this.setState({
+            userRoom: ""
+          });
+        }
+      });
+
     });
   }
 
@@ -164,6 +211,10 @@ class App extends React.Component {
         userID: this.state.userID,
         userMessage: this.state.userMessage
       });
+
+      this.setState({
+        userMessage: ""
+      });
     }
   }
 
@@ -174,7 +225,14 @@ class App extends React.Component {
           <ul className="messageWindow">
             {this.state.chatMessages.map((message, i) => {
               // Conditional Rendering to see if the message was 1) sent by the user 2) sent from the joinInject
-              return <li className={message.userID === this.state.userID ? "chatMessage ownMessage" : message.userID === "injectJoin" ? "injectJoin" : "chatMessage"} key={message.userID + i}><p>{message.userMessage}</p></li>
+              return (
+                <li className={message.userID === "injectJoin" ? "injectJoin chatMessageContainer" : message.userID === this.state.userID ? "chatMessageContainer ownMessage" : "chatMessageContainer"} key={message.userID + i}>
+                  <p className="chatMessageName" /* {message.userID === this.state.userID ? "chatMessageName ownMessage" : "chatMessageName"} */>{message.userName}</p>
+                <div className="chatMessage" >
+                  <p>{message.userMessage}</p>
+                </div>
+              </li>
+              )
             })}
           </ul>
           <form action="" onSubmit={this.sendMessage}>
@@ -185,7 +243,7 @@ class App extends React.Component {
         <div className="otherArea">
           <form action="" onSubmit={this.handleLogin}>
             <input type="text" name="userName" value={this.state.userName} onChange={this.handleInput} className={this.state.userID == "" ? "loginInput" : "loginInput loggedIn"} readOnly={this.state.userID == "" ? false : true} placeholder="Choose a name ..."/>
-            <button className={this.state.userID == "" ? "loginButton" : "loginButton loggedInButton"} type="submit">Login</button>
+            <button className={this.state.userID == "" ? "loginButton" : "loginButton loggedInButton"} disabled={this.state.disableLogin} type="submit">Login</button>
           </form>
           <ul className="userList">
             {this.state.userList.map((user, i) => {
