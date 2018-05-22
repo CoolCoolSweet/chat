@@ -112,7 +112,9 @@ class App extends React.Component {
 
   createRoom (e) {
     e.preventDefault();
-    if (!(this.state.createRoom)) {
+    if (!(this.state.userID)) {
+      alert("Please select a name before creating a room.");
+    } else if (!(this.state.createRoom)) {
       alert('Cannot create a room with no name!');
     } else if (this.state.roomList.includes(this.state.createRoom)) {
       alert('A room with that name already exists!');
@@ -245,6 +247,7 @@ class App extends React.Component {
     });
   }
   }
+
   render() {
     return (
       <div className="wrapper">

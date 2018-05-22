@@ -39,17 +39,23 @@ input {
     padding-left: 10px;
     margin-right: 10%;
     border-bottom: 1px solid #000;
+    
+    &:focus {
+        border-bottom: 2px solid #000;
+    }
 }
 
 button {
     min-width: 100px;
 
     &:hover {
-        opacity: 0.8;
+        border: 1px solid black;
     }
 
     &:active {
-        opacity: 0.5;
+        background: #000;
+        color: #fff;
+        border: 1px solid black;
     }
 }
 
@@ -155,6 +161,16 @@ button {
     
     .chatMessageName {
         color: royalblue
+    }
+}
+
+.otherArea li{
+
+    &:first-of-type:hover {
+        font-weight: normal;
+    }
+    &:hover {
+        font-weight: bold;
     }
 }
 
